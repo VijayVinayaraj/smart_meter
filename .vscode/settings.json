@@ -1,0 +1,15 @@
+{
+    "C_Cpp.errorSquiggles": "disabled",
+    "files.associations": {
+        "m90e26.h": "c",
+        "stdlib.h": "c",
+        "freertos.h": "c",
+        "spi_master.h": "c",
+        "gpio.h": "c",
+        "sdkconfig.h": "c",
+        "esp_log.h": "c",
+        "stdint.h": "c",
+        "esp_rom_sys.h": "c",
+        "reset_reasons.h": "c"
+    }
+}
