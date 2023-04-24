@@ -90,4 +90,14 @@
 void spi_init();
 uint16_t m90e26ReadU16(uint8_t address);
 void m90e26WriteU16( uint8_t address, uint16_t val);
+
+
+uint16_t getSystemStatus();
+uint16_t getMeterStatus();
+double getLineVoltage();
+double getLineCurrent();
+double getActivePower();
+double getPowerFactor ();
+
+
 #endif

@@ -2,6 +2,7 @@
  spi_device_handle_t m90e20;
  static const char TAG[]="spi";
 
+
 void m90e26WriteU16( uint8_t address, uint16_t val) {
 	
 	spi_transaction_t m90e26_buf ;
@@ -53,7 +54,7 @@ void spi_init(){
     //    .address_bits = 8,
     //     .duty_cycle_pos		= 128
     .command_bits		= 0,
-		.address_bits		= 8,
+		.address_bits		= 0,
 		.dummy_bits			= 0,
 		.mode				= 3,						// only SPI mode 3 supported
 		.duty_cycle_pos		= 128,						// same as 0 = 50/50% duty cycle
@@ -73,6 +74,43 @@ void spi_init(){
     ESP_LOGI(TAG,"added device");
     else
     ESP_LOGI(TAG,"not added device");
+
+}
+
+
+uint16_t getSystemStatus(){
+    m90e26ReadU16(0x31);
+    m90e26ReadU16(0x32);
+    m90e26ReadU16(0x33);
+    return m90e26ReadU16(SYS_STATUS);
+}
+
+
+uint16_t getMeterStatus(){
+    return m90e26ReadU16(MET_STATUS);
+}
+
+double getLineVoltage(){
+    uint16_t voltage = m90e26ReadU16(V_RMS);
+    return (double)voltage/100;
+}
+
+double getLineCurrent(){
+    uint16_t current = m90e26ReadU16(I_RMS_L);
+    return (double)current/1000;
+}
+
+double getActivePower(){
+    int16_t activePower = (int16_t) m90e26ReadU16(P_ACT_L);
+    return (double)activePower;
+}
+
+double getPowerFactor (){
+    int16_t powerFactor = (int16_t) m90e26ReadU16(P_FACTOR_L);
+    if (powerFactor & 0x8000) {
+    powerFactor = (powerFactor & 0x7FFF) * -1;
+  }
+  return (double)powerFactor / 1000;
 
 }
 
