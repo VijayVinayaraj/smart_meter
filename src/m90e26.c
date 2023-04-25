@@ -2,6 +2,9 @@
  spi_device_handle_t m90e20;
  static const char TAG[]="spi";
 
+  
+
+
 
 void m90e26WriteU16( uint8_t address, uint16_t val) {
 	
@@ -47,12 +50,6 @@ void spi_init(){
 
     ESP_ERROR_CHECK(spi_bus_initialize(SPI3_HOST,&buscfg,1));
     spi_device_interface_config_t devcfg={
-    //     .clock_speed_hz =200000,
-    //     .mode =3,
-    //     .spics_io_num=VSPI_CS1,
-    //     .queue_size=3,
-    //    .address_bits = 8,
-    //     .duty_cycle_pos		= 128
     .command_bits		= 0,
 		.address_bits		= 0,
 		.dummy_bits			= 0,
@@ -74,6 +71,8 @@ void spi_init(){
     ESP_LOGI(TAG,"added device");
     else
     ESP_LOGI(TAG,"not added device");
+
+    m90e26WriteU16(SOFTRESET,CODE_RESET);
 
 }
 
@@ -114,4 +113,109 @@ double getPowerFactor (){
 
 }
 
+uint16_t checksumCalc(uint8_t id){
+    metering[_plconsth] = 0x00B9;
+  metering[_plconstl] = 0xC1F3;
+  metering[_lgain] = 0x1D39;
+  metering[_lphi] = 0x0000;
+  metering[_ngain] = 0x0000;
+  metering[_nphi] = 0x0000;
+  metering[_pstartth] = 0x08BD;
+  metering[_pnolth] = 0x0000;
+  metering[_qstartth] = 0x0AEC;
+  metering[_qnolth] = 0x0000;
+  metering[_mmode] = 0x9422;
+  //_crc1 = 0x4A34;
 
+  measurement[_ugain] = 0xD464;
+  measurement[_igain] = 0x6E49;
+  measurement[_igainn] = 0x7530;
+  measurement[_uoffset] = 0x0000;
+  measurement[_ioffestl] = 0x0000;
+  measurement[_ioffsetn] = 0x0000;
+  measurement[_poffestl] = 0x0000;
+  measurement[_qoffsetl] = 0x0000;
+  measurement[_poffsetn] = 0x0000;
+  measurement[_qoffsetn] = 0x0000;
+  //_crc2 = 0xD294;
+    if(id == 1){
+        uint8_t l2c = 0;
+        uint8_t h2c = 0; 
+        for (int i = 0; i < 11; i++) {
+      l2c += metering[i];
+      l2c += metering[i] >> 8;
+      h2c ^= metering[i];
+      h2c ^= metering[i] >> 8;
+    }
+    return (( uint16_t)h2c << 8) | l2c;
+    }
+     else if (id == 2) {
+    uint8_t l3b = 0;
+    uint8_t h3b = 0;
+    for (int i = 0; i < 10; i++) {
+      l3b += measurement[i];
+      l3b += measurement[i] >> 8;
+      h3b ^= measurement[i];
+      h3b ^= measurement[i] >> 8;
+    }
+    return ((uint16_t)h3b << 8) | l3b;
+  }
+  return 0;
+}
+
+void calibrateIC(){
+
+  metering[_plconsth] = 0x00B9;
+  metering[_plconstl] = 0xC1F3;
+  metering[_lgain] = 0x1D39;
+  metering[_lphi] = 0x0000;
+  metering[_ngain] = 0x0000;
+  metering[_nphi] = 0x0000;
+  metering[_pstartth] = 0x08BD;
+  metering[_pnolth] = 0x0000;
+  metering[_qstartth] = 0x0AEC;
+  metering[_qnolth] = 0x0000;
+  metering[_mmode] = 0x9422;
+  //_crc1 = 0x4A34;
+
+  measurement[_ugain] = 0xD464;
+  measurement[_igain] = 0x6E49;
+  measurement[_igainn] = 0x7530;
+  measurement[_uoffset] = 0x0000;
+  measurement[_ioffestl] = 0x0000;
+  measurement[_ioffsetn] = 0x0000;
+  measurement[_poffestl] = 0x0000;
+  measurement[_qoffsetl] = 0x0000;
+  measurement[_poffsetn] = 0x0000;
+  measurement[_qoffsetn] = 0x0000;
+  //_crc2 = 0xD294;
+
+
+    m90e26WriteU16(CALSTART,CODE_START); // start calibration
+    m90e26WriteU16(PLconstH,metering[_plconsth]); //value calculated from application note
+    m90e26WriteU16(PLconstL,metering[_plconstl]); //value calculated from application note
+    m90e26WriteU16(L_GAIN,metering[_lgain]);
+    m90e26WriteU16(CRC_1,checksumCalc(1));    // calculate the checksum and check it 
+
+    // start adjustments
+    m90e26WriteU16(ADJSTART,CODE_START);
+    m90e26WriteU16(U_GAIN,measurement[_ugain]);
+    m90e26WriteU16(I_GAIN_L,measurement[_igain]);
+    m90e26WriteU16(CRC_2,checksumCalc(2));
+
+
+    // after calibration start metering
+    m90e26WriteU16(CALSTART,CODE_CHECK);
+    m90e26WriteU16(ADJSTART,CODE_CHECK);
+
+   uint16_t systemstatus = getSystemStatus();
+
+  if (systemstatus & 0xC000) {
+    // checksum 1 error
+    ESP_LOGE(TAG,"Checksum 1 Error!!");
+  }
+  if (systemstatus & 0x3000) {
+    // checksum 2 error
+    ESP_LOGE(TAG,"Checksum 2 Error!!");
+  }
+}
