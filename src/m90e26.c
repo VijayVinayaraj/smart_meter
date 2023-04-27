@@ -2,7 +2,34 @@
  spi_device_handle_t m90e20;
  static const char TAG[]="spi";
 
-  
+  uint16_t metering[11];
+  enum metering_values {
+    _plconsth,
+    _plconstl,
+    _lgain,
+    _lphi,
+    _ngain,
+    _nphi,
+    _pstartth,
+    _pnolth,
+    _qstartth,
+    _qnolth,
+    _mmode
+  };
+  //uint16_t _crc1;
+  uint16_t measurement[10];
+  enum measurement_values {
+    _ugain,
+    _igain,
+    _igainn,
+    _uoffset,
+    _ioffestl,
+    _ioffsetn,
+    _poffestl,
+    _qoffsetl,
+    _poffsetn,
+    _qoffsetn
+  };
 
 
 
@@ -18,7 +45,7 @@ void m90e26WriteU16( uint8_t address, uint16_t val) {
 	
 	ESP_ERROR_CHECK(spi_device_transmit(m90e20 ,&m90e26_buf)) ;
 	
-	ESP_LOGI(TAG, "TX: addr=%02x d0=%02x d1=%02x\r\n", m90e26_buf.tx_data[0], m90e26_buf.tx_data[1], m90e26_buf.tx_data[2]) ;
+	//ESP_LOGI(TAG, "TX: addr=%02x d0=%02x d1=%02x\r\n", m90e26_buf.tx_data[0], m90e26_buf.tx_data[1], m90e26_buf.tx_data[2]) ;
 }
 
 
@@ -32,7 +59,7 @@ uint16_t m90e26ReadU16(uint8_t address) {
 	
 	ESP_ERROR_CHECK(spi_device_transmit(m90e20, &m90e26_buf)) ;
 	
-	ESP_LOGI(TAG, "RX: addr=%02x  d0=%02x  d1=%02x  dx=%04x\r\n", m90e26_buf.tx_data[0], m90e26_buf.rx_data[1], m90e26_buf.rx_data[2], (m90e26_buf.rx_data[1] << 8) | m90e26_buf.rx_data[2]) ;
+	//ESP_LOGI(TAG, "RX: addr=%02x  d0=%02x  d1=%02x  dx=%04x\r\n", m90e26_buf.tx_data[0], m90e26_buf.rx_data[1], m90e26_buf.rx_data[2], (m90e26_buf.rx_data[1] << 8) | m90e26_buf.rx_data[2]) ;
 	return (m90e26_buf.rx_data[1] << 8) | m90e26_buf.rx_data[2] ;
 }
 void spi_init(){
@@ -127,8 +154,8 @@ uint16_t checksumCalc(uint8_t id){
   metering[_mmode] = 0x9422;
   //_crc1 = 0x4A34;
 
-  measurement[_ugain] = 0xD464;
-  measurement[_igain] = 0x6E49;
+  measurement[_ugain] = 0x37E8;
+  measurement[_igain] = 0x11DA;
   measurement[_igainn] = 0x7530;
   measurement[_uoffset] = 0x0000;
   measurement[_ioffestl] = 0x0000;
@@ -165,43 +192,19 @@ uint16_t checksumCalc(uint8_t id){
 
 void calibrateIC(){
 
-  metering[_plconsth] = 0x00B9;
-  metering[_plconstl] = 0xC1F3;
-  metering[_lgain] = 0x1D39;
-  metering[_lphi] = 0x0000;
-  metering[_ngain] = 0x0000;
-  metering[_nphi] = 0x0000;
-  metering[_pstartth] = 0x08BD;
-  metering[_pnolth] = 0x0000;
-  metering[_qstartth] = 0x0AEC;
-  metering[_qnolth] = 0x0000;
-  metering[_mmode] = 0x9422;
-  //_crc1 = 0x4A34;
+ 
 
-  measurement[_ugain] = 0xD464;
-  measurement[_igain] = 0x6E49;
-  measurement[_igainn] = 0x7530;
-  measurement[_uoffset] = 0x0000;
-  measurement[_ioffestl] = 0x0000;
-  measurement[_ioffsetn] = 0x0000;
-  measurement[_poffestl] = 0x0000;
-  measurement[_qoffsetl] = 0x0000;
-  measurement[_poffsetn] = 0x0000;
-  measurement[_qoffsetn] = 0x0000;
-  //_crc2 = 0xD294;
+    // m90e26WriteU16(CALSTART,CODE_START); // start calibration
+    // m90e26WriteU16(PLconstH,0x00B9); //value calculated from application note
+    // m90e26WriteU16(PLconstL,0xC1F3); //value calculated from application note
+    // m90e26WriteU16(L_GAIN,0x1D39);
+    // m90e26WriteU16(CRC_1,checksumCalc(1));    // calculate the checksum and check it 
 
-
-    m90e26WriteU16(CALSTART,CODE_START); // start calibration
-    m90e26WriteU16(PLconstH,metering[_plconsth]); //value calculated from application note
-    m90e26WriteU16(PLconstL,metering[_plconstl]); //value calculated from application note
-    m90e26WriteU16(L_GAIN,metering[_lgain]);
-    m90e26WriteU16(CRC_1,checksumCalc(1));    // calculate the checksum and check it 
-
-    // start adjustments
+    // // start adjustments
     m90e26WriteU16(ADJSTART,CODE_START);
-    m90e26WriteU16(U_GAIN,measurement[_ugain]);
-    m90e26WriteU16(I_GAIN_L,measurement[_igain]);
-    m90e26WriteU16(CRC_2,checksumCalc(2));
+    m90e26WriteU16(U_GAIN,0x37E8); // gain for rms voltage
+    m90e26WriteU16(I_GAIN_L,0x11DA);// gain for the rms current
+     m90e26WriteU16(CRC_2,checksumCalc(2));
 
 
     // after calibration start metering

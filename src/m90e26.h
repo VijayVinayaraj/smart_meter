@@ -93,34 +93,7 @@
 #define PStartTh_Default 0x08BD
 #define QStartTh_Default 0x0AEC
 #define MMode_Default 0x9422
-uint16_t metering[11];
-  enum metering_values {
-    _plconsth,
-    _plconstl,
-    _lgain,
-    _lphi,
-    _ngain,
-    _nphi,
-    _pstartth,
-    _pnolth,
-    _qstartth,
-    _qnolth,
-    _mmode
-  };
-  //uint16_t _crc1;
-  uint16_t measurement[10];
-  enum measurement_values {
-    _ugain,
-    _igain,
-    _igainn,
-    _uoffset,
-    _ioffestl,
-    _ioffsetn,
-    _poffestl,
-    _qoffsetl,
-    _poffsetn,
-    _qoffsetn
-  };
+
  //uint16_t _crc2;
 
 
