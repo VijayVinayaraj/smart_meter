@@ -6,8 +6,7 @@ void app_main(){
 
     spi_init();
     calibrateIC();
-    ESP_LOGI(TAG,"lagin %02x",m90e26ReadU16(L_GAIN));
-    ESP_LOGI(TAG,"ugain %02x",m90e26ReadU16(U_GAIN));
+
 
     for (;;){
     ESP_LOGI(TAG,"meter status: %x",getMeterStatus());

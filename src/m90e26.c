@@ -194,12 +194,7 @@ void calibrateIC(){
 
  
 
-    // m90e26WriteU16(CALSTART,CODE_START); // start calibration
-    // m90e26WriteU16(PLconstH,0x00B9); //value calculated from application note
-    // m90e26WriteU16(PLconstL,0xC1F3); //value calculated from application note
-    // m90e26WriteU16(L_GAIN,0x1D39);
-    // m90e26WriteU16(CRC_1,checksumCalc(1));    // calculate the checksum and check it 
-
+    
     // // start adjustments
     m90e26WriteU16(ADJSTART,CODE_START);
     m90e26WriteU16(U_GAIN,0x37E8); // gain for rms voltage
