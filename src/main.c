@@ -6,6 +6,9 @@ void app_main(){
 
     spi_init();
     calibrateIC();
+
+
+    for (;;){
     ESP_LOGI(TAG,"meter status: %x",getMeterStatus());
     ESP_LOGI(TAG,"AP: %f",getActivePower());
     ESP_LOGI(TAG,"LC: %f",getLineCurrent());
@@ -13,8 +16,8 @@ void app_main(){
     ESP_LOGI(TAG,"PF: %f",getPowerFactor());
     ESP_LOGI(TAG,"SS: %x",getSystemStatus());
 
-    
-    
+    vTaskDelay(200);
+    }
     
     
     
