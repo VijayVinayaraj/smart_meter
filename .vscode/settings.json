@@ -11,6 +11,7 @@
         "stdint.h": "c",
         "esp_rom_sys.h": "c",
         "reset_reasons.h": "c",
-        "inttypes.h": "c"
+        "inttypes.h": "c",
+        "cmath": "c"
     }
 }

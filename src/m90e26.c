@@ -128,7 +128,7 @@ double getLineCurrent(){
 
 double getActivePower(){
     int16_t activePower = (int16_t) m90e26ReadU16(P_ACT_L);
-    return (double)activePower;
+    return  ( (double)activePower * -1);
 }
 
 double getPowerFactor (){
@@ -141,7 +141,7 @@ double getPowerFactor (){
 }
 
 uint16_t checksumCalc(uint8_t id){
-    metering[_plconsth] = 0x00B9;
+  metering[_plconsth] = 0x00B9;
   metering[_plconstl] = 0xC1F3;
   metering[_lgain] = 0x1D39;
   metering[_lphi] = 0x0000;
@@ -154,7 +154,7 @@ uint16_t checksumCalc(uint8_t id){
   metering[_mmode] = 0x9422;
   //_crc1 = 0x4A34;
 
-  measurement[_ugain] = 0x37E8;
+  measurement[_ugain] = 0x36ec;
   measurement[_igain] = 0x11DA;
   measurement[_igainn] = 0x7530;
   measurement[_uoffset] = 0x0000;
@@ -197,7 +197,7 @@ void calibrateIC(){
     
     // // start adjustments
     m90e26WriteU16(ADJSTART,CODE_START);
-    m90e26WriteU16(U_GAIN,0x37E8); // gain for rms voltage
+    m90e26WriteU16(U_GAIN,0x36ec); // gain for rms voltage
     m90e26WriteU16(I_GAIN_L,0x11DA);// gain for the rms current
      m90e26WriteU16(CRC_2,checksumCalc(2));
 
