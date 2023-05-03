@@ -190,6 +190,18 @@ uint16_t checksumCalc(uint8_t id){
   return 0;
 }
 
+double getEnergy(){
+  uint16_t energy =  m90e26ReadU16(E_ACT_FWD); // register is cleared after reading
+  return (double)energy;
+}
+
+double getEnergyRev(){
+  uint16_t energy =  m90e26ReadU16(E_ACT_REV);
+  return (double)energy;
+}
+
+
+
 void calibrateIC(){
 
  
