@@ -89,8 +89,8 @@ void mqttSendDData(char* data){
                 
                // sprintf(str,"count :  %d",data);
             strcpy(str,data);
-            int msgid = esp_mqtt_client_publish(client,"temp",str,0,0,0);
-            ESP_LOGI(TAG,"mesg id %d",msgid);
+            int msgid = esp_mqtt_client_publish(client,"temp",data,0,0,0);
+           // ESP_LOGI(TAG,"mesg id %d",msgid);
             vTaskDelay(1000/portTICK_PERIOD_MS);
             }
 }
