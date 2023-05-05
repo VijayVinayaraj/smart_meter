@@ -4,27 +4,9 @@ version: '3.7'
 services:
   mosquitto:
     image: eclipse-mosquitto:2
-    user: mosquitto
     volumes:
-      - type: bind
-        source: ./config/
-        target: /mosquitto/config/
-      - type: bind
-        source: ./log/
-        target: /mosquitto/log/
-      - type: volume
-        source: data
-        target: /mosquitto/data/
+      - ./mosquitto:/mosquitto:rw
     ports:
-      - target: 1883
-        published: 1883
-        protocol: tcp
-        mode: host
-      - target: 9001
-        published: 9001
-        protocol: tcp
-        mode: host
+      - "9001:9001"
+      - "1883:1883"
 
-volumes:
-  data:
-    name: "mqtt-broker-data"
