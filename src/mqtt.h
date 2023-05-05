@@ -24,6 +24,7 @@
 #include "esp_log.h"
 #include "mqtt_client.h"
 
-void mqtt_main(void);
+void mqttSendDData(char* data);
+void mqttInit();
 
 #endif

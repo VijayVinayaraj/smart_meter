@@ -1,6 +1,9 @@
 #include "mqtt.h"
 
 static const char *TAG = "MQTTWS_EXAMPLE";
+bool subscribed = false;
+esp_mqtt_client_handle_t client;
+
 
 static void log_error_if_nonzero(const char *message, int error_code)
 {
@@ -9,16 +12,7 @@ static void log_error_if_nonzero(const char *message, int error_code)
     }
 }
 
-/*
- * @brief Event handler registered to receive MQTT events
- *
- *  This function is called by the MQTT client event loop.
- *
- * @param handler_args user data registered to the event.
- * @param base Event base for the handler(always MQTT Base in this example).
- * @param event_id The id for the received event.
- * @param event_data The data for the event, esp_mqtt_event_handle_t.
- */
+
 static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data)
 {
     
@@ -45,19 +39,19 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
 
     case MQTT_EVENT_SUBSCRIBED:
         ESP_LOGI(TAG, "MQTT_EVENT_SUBSCRIBED, msg_id=%d", event->msg_id);
-        msg_id = esp_mqtt_client_publish(client, "temp", "data from esp32", 0, 0, 0);
-        ESP_LOGI(TAG, "sent publish successful, msg_id=%d", msg_id);
+        subscribed = true;
         break;
     case MQTT_EVENT_UNSUBSCRIBED:
+        subscribed = false;
         ESP_LOGI(TAG, "MQTT_EVENT_UNSUBSCRIBED, msg_id=%d", event->msg_id);
         break;
     case MQTT_EVENT_PUBLISHED:
         ESP_LOGI(TAG, "MQTT_EVENT_PUBLISHED, msg_id=%d", event->msg_id);
         break;
     case MQTT_EVENT_DATA:
-        ESP_LOGI(TAG, "MQTT_EVENT_DATA");
-        printf("TOPIC=%.*s\r\n", event->topic_len, event->topic);
-        printf("DATA=%.*s\r\n", event->data_len, event->data);
+       //  ESP_LOGI(TAG, "MQTT_EVENT_DATA");
+        // printf("TOPIC=%.*s\r\n", event->topic_len, event->topic);
+        // printf("DATA=%.*s\r\n", event->data_len, event->data);
         break;
     case MQTT_EVENT_ERROR:
         ESP_LOGI(TAG, "MQTT_EVENT_ERROR");
@@ -75,26 +69,28 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
     }
 }
 
-static void mqtt_app_start(void)
-{
+void mqttInit(){
     const esp_mqtt_client_config_t mqtt_cfg = {
-        .broker.address.uri = "ws://192.168.104.98:9001/mqtt"
+        .broker.address.uri = "ws://192.168.118.98:9001/mqtt"
     };
 
-    esp_mqtt_client_handle_t client = esp_mqtt_client_init(&mqtt_cfg);
+     client = esp_mqtt_client_init(&mqtt_cfg);
     /* The last argument may be used to pass data to the event handler, in this example mqtt_event_handler */
     esp_mqtt_client_register_event(client, ESP_EVENT_ANY_ID, mqtt_event_handler, NULL);
     esp_mqtt_client_start(client);
+
 }
 
 
 
-void mqtt_main(void)
-{
-    ESP_LOGI(TAG, "[APP] Startup..");
-   
- 
-
-
-    mqtt_app_start();
+void mqttSendDData(char* data){
+         char str[50];
+    if(subscribed){
+                
+               // sprintf(str,"count :  %d",data);
+            strcpy(str,data);
+            int msgid = esp_mqtt_client_publish(client,"temp",str,0,0,0);
+            ESP_LOGI(TAG,"mesg id %d",msgid);
+            vTaskDelay(1000/portTICK_PERIOD_MS);
+            }
 }
