@@ -16,6 +16,8 @@ double accumulatedEnergy =0;
 //     ESP_LOGI(TAG,"PF: %f",getPowerFactor());
 //     ESP_LOGI(TAG,"SS: %x",getSystemStatus());
     double energy = getEnergy();
+    double current = getLineCurrent();
+    double voltage = getLineVoltage();
 //     double energyRev=getEnergyRev();
     accumulatedEnergy =accumulatedEnergy+ energy;
 //     accumulatedRevEnergy =accumulatedRevEnergy+ energyRev; 
@@ -32,7 +34,7 @@ char json[200];
     for(;;){
        char time[64];
       strcpy(time,getTime());
-      sprintf(json,"{\"Time\":%s,\"Energy\":%f,\"AccEnergy\":%f}",time,energy,accumulatedEnergy);
+      sprintf(json,"{\"Time\":\"%s\",\"Energy\":%f,\"AccEnergy\":%f,\"Current\":%f,\"Voltage\":%f}",time,energy,accumulatedEnergy,current,voltage);
      // ESP_LOGI(TAG,"from main : %s", json);
      mqttSendDData(json);
         vTaskDelay(500/portTICK_PERIOD_MS);
