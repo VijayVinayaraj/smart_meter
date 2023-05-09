@@ -9,4 +9,8 @@ services:
     ports:
       - "9001:9001"
       - "1883:1883"
-
+  python:
+    build: ./pythonFiles
+    volumes:
+      - ./pythonFiles:/code:rw
+   

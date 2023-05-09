@@ -39,7 +39,7 @@ mqttc.subscribe('temp')
 
 def initCsv():
     fieldnames = ['Time', 'Energy', 'AccEnergy','Current','Voltage']
-    with open('../log/data.csv',mode='w',encoding='UTF8', newline='') as file:
+    with open('./data.csv',mode='w',encoding='UTF8', newline='') as file:
         csvwritter = csv.DictWriter(file,fieldnames=fieldnames)
         csvwritter.writeheader()
 
@@ -47,7 +47,7 @@ def initCsv():
 def writeDatatoCsv(data):
     jsonData = json.loads(data)
     fieldnames = ['Time', 'Energy', 'AccEnergy','Current','Voltage']
-    with open('../log/data.csv',mode='a',encoding='UTF8', newline='') as file:
+    with open('./data.csv',mode='a',encoding='UTF8', newline='') as file:
         csvwritter = csv.DictWriter(file,fieldnames=fieldnames)
         csvwritter.writerow(jsonData)
 

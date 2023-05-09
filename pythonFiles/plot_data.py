@@ -6,7 +6,7 @@ import pandas as pd
 x=[]
 y=[]
 def animate(i):
-    data =pd.read_csv('../log/data.csv')
+    data =pd.read_csv('./data.csv')
     x = data['Time']
     y1 = data['Energy']
     y2 = data['AccEnergy']

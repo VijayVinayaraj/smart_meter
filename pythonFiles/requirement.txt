@@ -1,3 +1,4 @@
-pandas
-matplotlib
-paho-mqtt
+pandas == 2.0
+matplotlib== 3.7.1
+paho-mqtt==1.6
+numpy==1.24
