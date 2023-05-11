@@ -110,6 +110,7 @@ double getLineVoltage();
 double getLineCurrent();
 double getActivePower();
 double getPowerFactor ();
-
+double getEnergy();
+double getEnergyRev();
 
 #endif
