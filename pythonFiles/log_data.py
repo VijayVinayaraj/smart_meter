@@ -4,7 +4,22 @@ import base64
 import pandas as pd
 import csv
 #import DataPlot and RealtimePlot from the file plot_data.py
-
+import socket
+ 
+def get_local_ip():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        # doesn't even have to be reachable
+        s.connect(('192.255.255.255', 1))
+        IP = s.getsockname()[0]
+    except:
+        IP = '127.0.0.1'
+    finally:
+        s.close()
+    return IP
+ 
+local_ip = get_local_ip()
+print(local_ip)
 
 
 
@@ -33,7 +48,7 @@ mqttc.on_publish = on_publish
 mqttc.on_subscribe = on_subscribe
 # Uncomment to enable debug messages
 mqttc.on_log = on_log
-mqttc.connect("192.168.118.229", 9001, 60)
+mqttc.connect(local_ip, 9001, 60)
 print(f'trying to connect.....')
 mqttc.subscribe('temp')
 
