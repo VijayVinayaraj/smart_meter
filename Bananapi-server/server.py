@@ -1,82 +1,97 @@
-import sqlite3
-import paho.mqtt.client as mqtt
-import socket
+from typing import Any, List
+from fastapi import FastAPI,WebSocket
+from sqlalchemy import Column, Float,create_engine,Integer,String,func,inspect
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+from pydantic import BaseModel
 import json
-#connect to database
 
-#import DataPlot and RealtimePlot from the file plot_data.py
+app = FastAPI()
+
+class Energy_scheme(BaseModel):
+    id:int
+    time:str
+    energy_data:float
+    accenergy:float
+    current:float
+    voltage:float
+
+    class Config:
+        orm_mode=True
+
+Base = declarative_base()
+
+class Energy(Base):
+
+    __tablename__ = "energy"
+
+    id = Column(Integer,primary_key=True)
+    time = Column("time", String )
+    energy_data = Column("energy_data", Float),
+    accenergy = Column("accenergy", Float)
+    current = Column("current",Float)
+    voltage= Column("voltage",Float)
+
+    def __init__(self,time,energy,accenergy,current,voltage):
+        # self.id=id
+        self.time=time
+        self.energy_data=energy
+        self.accenergy=accenergy
+        self.current=current
+        self.voltage=voltage
+
+        
+
+
+SQL_DATABASE_URL = "sqlite:///./Energy.db"
+
+engine = create_engine(SQL_DATABASE_URL,echo=True,connect_args={"check_same_thread": False})
+Session_db = sessionmaker(autocommit=False,autoflush=False,bind=engine)
+session =Session_db()
+Base.metadata.create_all(bind=engine)
+
+count = session.query(func.count(Energy.id)).scalar()
+print(count)
+session.commit()
  
-def get_local_ip():
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    try:
-        # doesn't even have to be reachable
-        s.connect(('192.255.255.255', 1))
-        IP = s.getsockname()[0]
-    except:
-        IP = '127.0.0.1'
-    finally:
-        s.close()
-    return IP
- 
-local_ip = get_local_ip()
-print(local_ip)
 
 
+@app.get("/data/")
+async def getData():
+    data = session.query(Energy).all()
+    return data
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket:WebSocket):
+    await websocket.accept()
+    while True :
+        try:
+            # Get the latest data from the database
+            # sendDataFromDB()
+            with Session_db() as session:
+                data = session.query(Energy).all()
+                for d in data:
+                    await websocket.send_json(json.dumps(object_as_dict(d)))
+
+            # # Send the data to the websocket client
+            # await websocket.send_json(json.dumps(data))
+
+        except Exception as e:
+            print(e)
+            break
+        #  await websocket.send_text("helo")
 
 
-def on_connect(mqttc, obj, flags, rc):
-    databaseInit()
-    print("rc: "+str(rc))
-
-def on_message(mqttc, obj, msg):
-    storeData(msg.payload)
-def on_publish(mqttc, obj, mid):
-    print("mid: "+str(mid))
-
-def on_subscribe(mqttc, obj, mid, granted_qos):
-    print("Subscribed: "+str(mid)+" "+str(granted_qos))
-
-def on_log(mqttc, obj, level, string):
-    print(string)
+def object_as_dict(obj):
+    return {c.key: getattr(obj, c.key)
+            for c in inspect(obj).mapper.column_attrs}
 
 
-mqttc = mqtt.Client(transport="websockets")
-mqttc.ws_set_options("/mqtt",headers=None)
-mqttc.on_message = on_message
-mqttc.on_connect = on_connect
-mqttc.on_publish = on_publish
-mqttc.on_subscribe = on_subscribe
-mqttc.on_log = on_log
-mqttc.connect(local_ip, 9001, 60)
-print(f'trying to connect.....')
-mqttc.subscribe('data')
+count = 0
+def sendDataFromDB():
+    with Session_db() as session:
+        data = session.query(Energy).all()
+        for row in data:
+            
+            print(object_as_dict(row))
 
-
-def databaseInit():
-    connection = sqlite3.connect('Energy.db')
-    cursor =connection.cursor()
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS energy (
-        timestamp text,
-        energy real,
-        accEnergy real,
-        current real,
-        voltage real
-        )""")
-    connection.commit()
-    connection.close()
-
-
-def storeData(data):
-    connection = sqlite3.connect('Energy.db')
-    cursor =connection.cursor()
-    data_dict = json.loads(data)
-    print(data_dict)
-    cursor.execute("INSERT INTO energy VALUES (:Time,:Energy,:AccEnergy,:Current,:Voltage)",data_dict)
-    cursor.execute("SELECT * FROM energy ")
-    print(cursor.fetchall())
-    connection.commit()
-    connection.close()
-
-    
-mqttc.loop_forever()
