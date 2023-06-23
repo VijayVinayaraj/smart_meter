@@ -85,9 +85,32 @@
 #define	CODE_POWER			0xA987	// Set small power mode
 
 
+#define Ugain_Default 0x6720
+#define IgainL_Default 0x7A13
+#define IgainN_Default 0x7530
+#define PLconstL_Default 0xD174
+#define PLconstH_Default 0x0015
+#define PStartTh_Default 0x08BD
+#define QStartTh_Default 0x0AEC
+#define MMode_Default 0x9422
+
+ //uint16_t _crc2;
+
 
 
 void spi_init();
 uint16_t m90e26ReadU16(uint8_t address);
 void m90e26WriteU16( uint8_t address, uint16_t val);
+uint16_t checksumCalc(uint8_t id);
+void calibrateIC();
+
+uint16_t getSystemStatus();
+uint16_t getMeterStatus();
+double getLineVoltage();
+double getLineCurrent();
+double getActivePower();
+double getPowerFactor ();
+double getEnergy();
+double getEnergyRev();
+
 #endif
